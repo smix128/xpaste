@@ -13,6 +13,6 @@
       rbenv_users:
         - mix
     - { role: postgresql, become: true }
-    - nginx
-    - xpaste
+#    - nginx
+#    - xpaste
 
