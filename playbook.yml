@@ -1,0 +1,18 @@
+- name: "Deploy xpaste"
+  hosts: all
+
+  roles:
+    - role: zzet.rbenv
+      vars:
+        rbenv:
+          env: user
+          version: v1.0.0
+          default_ruby: 2.6.10
+          rubies:
+            - version: 2.6.10
+      rbenv_users:
+        - mix
+    - { role: postgresql, become: true }
+    - nginx
+    - xpaste
+

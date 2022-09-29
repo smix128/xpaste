@@ -1,0 +1,70 @@
+- name: "Init vars"
+  include_role:
+    name: geerlingguy.postgresql
+    tasks_from: variables
+
+- name: "Setup postrges"
+  include_role:
+    name: geerlingguy.postgresql
+    tasks_from: setup-RedHat
+
+- name: "Init postgres"
+  include_role:
+    name: geerlingguy.postgresql
+    tasks_from: initialize
+
+- name: "Start postgresql server"
+  become: true
+  systemd:
+    name: "{{ postgresql_daemon }}"
+    state: started
+
+- name: "Configure postgres"
+  include_role:
+    name: geerlingguy.postgresql
+    tasks_from: configure
+
+- name: "Configure users"
+  include_role:
+    name: geerlingguy.postgresql
+    tasks_from: users
+
+- name: "Configure DB"
+  include_role:
+    name: geerlingguy.postgresql
+    tasks_from: databases
+
+- name: "Change pg_hba.conf"
+  become: true
+  ansible.builtin.copy:
+    src: "pg_hba.conf"
+    dest: "/var/lib/pgsql/data/pg_hba.conf"
+    owner: "postgres"
+    group: "postgres"
+    mode: "0644"
+
+- name: "Restart postgres"
+  become: true
+  ansible.builtin.service:
+    name: "{{ postgresql_daemon }}"
+    state: restarted
+    enabled: true
+
+- name: "Create user"
+  postgresql_user:
+    name: "ruby_user"
+    password: "password"
+  become: true
+  become_user: postgres
+  become_method: sudo
+
+- name: "Create DB"
+  postgresql_db:
+    name: "ruby_db"
+
+- name: "Restart postgres"
+  become: true
+  ansible.builtin.service:
+    name: "{{ postgresql_daemon }}"
+    state: restarted
+    enabled: true
